@@ -13,21 +13,6 @@
 #include <chrono>
 
 #define TWIDLE(k, angle) std::polar(1.0, k * angle)
-#include "SignalPlot.h"
-#include <QtWidgets/QApplication>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_symbol.h>
-#include <qwt_legend.h>
-
-#include <cmath>
-#include <complex>
-#include <iostream>
-#include <thread> 
-#include <chrono>
-
-#define TWIDLE(k, angle) std::polar(1.0, k * angle)
 
 QwtPlot* plotSignal(std::complex<double>* signal, size_t samples, char* title);
 
