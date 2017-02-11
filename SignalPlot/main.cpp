@@ -13,32 +13,40 @@
 #include <chrono>
 
 #define TWIDLE(k, angle) std::polar(1.0, k * angle)
+#include "SignalPlot.h"
+#include <QtWidgets/QApplication>
+#include <qwt_plot.h>
+#include <qwt_plot_curve.h>
+#include <qwt_plot_grid.h>
+#include <qwt_symbol.h>
+#include <qwt_legend.h>
 
+#include <cmath>
+#include <complex>
+#include <iostream>
+#include <thread> 
+#include <chrono>
 
-void DFT(std::complex<double>* x, std::complex<double>* X, int N, int s) {
+#define TWIDLE(k, angle) std::polar(1.0, k * angle)
 
-	if (N == 1)
-		X[0] = x[0];
+QwtPlot* plotSignal(std::complex<double>* signal, size_t samples, char* title);
 
-	else {
-		DFT(x, X, N / 2, 2 * s);
-		DFT(x + s, X + N / 2, N / 2, 2 * s);
+void DFT(std::complex<double>* x, std::complex<double>* X, int N, int s);
+void FFT_2_thread(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id, size_t num_threads);
+void FFT_2(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id);
+void FFT_4_thread(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id, size_t num_threads);
+void FFT_4(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id);
+void FFT_8_thread(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id, size_t num_threads);
+void FFT_8(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id);
+void threaded_DFT(std::complex<double>*x, std::complex<double>* X, size_t N);
+void silly_threaded_DFT(std::complex<double>*x, std::complex<double>* X, size_t N);
 
-		for (size_t k = 0; k < N / 2; k++)
-		{
-			std::complex<double> tmp = X[k];
-			X[k] = tmp + std::polar(1.0,double(-2 * M_PI *k / N)) * X[k + N / 2];
-			X[k+N/2] = tmp - std::polar(1.0,double(-2 * M_PI *k / N)) * X[k + N / 2];	
-		}
-	}
-}
+QwtPlot* plotSignal(std::complex<double>* signal, size_t samples, char* title) {
 
-QwtPlot* plotSignal(std::complex<double>* signal,size_t samples, char* title) {
-
-	QwtPlot* plot=new QwtPlot();
+	QwtPlot* plot = new QwtPlot();
 	plot->setTitle(title);
 	plot->setCanvasBackground(Qt::white);
-	plot->setAxisScale(QwtPlot::yLeft, -10.0,10.0);
+	plot->setAxisScale(QwtPlot::yLeft, -10.0, 10.0);
 	plot->insertLegend(new QwtLegend());
 
 	QwtPlotGrid *grid = new QwtPlotGrid();
@@ -47,11 +55,11 @@ QwtPlot* plotSignal(std::complex<double>* signal,size_t samples, char* title) {
 	QwtPlotCurve *curve = new QwtPlotCurve();
 	curve->setTitle("Some Points");
 	curve->setPen(Qt::blue, 0),
-	curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
+		curve->setRenderHint(QwtPlotItem::RenderAntialiased, true);
 	curve->setStyle(QwtPlotCurve::CurveStyle::Sticks);
 
 	QwtSymbol *symbol = new QwtSymbol(QwtSymbol::Ellipse,
-	QBrush(Qt::yellow), QPen(Qt::red, 2), QSize(8, 8));
+		QBrush(Qt::yellow), QPen(Qt::red, 2), QSize(8, 8));
 	curve->setSymbol(symbol);
 
 	curve->setStyle(QwtPlotCurve::CurveStyle::Sticks);
@@ -72,6 +80,33 @@ QwtPlot* plotSignal(std::complex<double>* signal,size_t samples, char* title) {
 	return plot;
 }
 
+void DFT(std::complex<double>* x, std::complex<double>* X, int N, int s) {
+
+	if (N == 1)
+		X[0] = x[0];
+
+	else {
+		DFT(x, X, N / 2, 2 * s);
+		DFT(x + s, X + N / 2, N / 2, 2 * s);
+
+		for (size_t k = 0; k < N / 2; k++)
+		{
+			std::complex<double> tmp = X[k];
+			X[k] = tmp + std::polar(1.0,double(-2 * M_PI *k / N)) * X[k + N / 2];
+			X[k+N/2] = tmp - std::polar(1.0,double(-2 * M_PI *k / N)) * X[k + N / 2];	
+		}
+	}
+}
+
+void FFT_2_thread(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id, size_t num_threads) {
+	size_t num_groups = N / 2;
+	size_t work_per_thread = num_groups / num_threads;
+
+	for (size_t i = 0; i < work_per_thread; i++)
+	{
+		FFT_2(in, out, N, Ns, work_per_thread*thread_id + i);
+	}
+}
 void FFT_2(std::complex<double>* in, std::complex<double>* out,size_t N, size_t Ns, size_t thread_id ){
 	
 	size_t num_threads = N / 2;
@@ -95,6 +130,15 @@ void FFT_2(std::complex<double>* in, std::complex<double>* out,size_t N, size_t 
 	out[(1 * Ns) + Idout] = in1;
 }
 
+void FFT_4_thread(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id, size_t num_threads) {
+	size_t num_groups = N / 4;
+	size_t work_per_thread = num_groups / num_threads;
+
+	for (size_t i = 0; i < work_per_thread; i++)
+	{
+		FFT_4(in, out, N, Ns, work_per_thread*thread_id + i);
+	}
+}
 void FFT_4(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id)
 {
 	size_t num_threads = N / 4;
@@ -129,6 +173,15 @@ void FFT_4(std::complex<double>* in, std::complex<double>* out, size_t N, size_t
 	out[(3 * Ns) + Idout] = in3;
 }
 
+void FFT_8_thread(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id, size_t num_threads) {
+	size_t num_groups = N / 8;
+	size_t work_per_thread = num_groups / num_threads;
+
+	for (size_t i = 0; i < work_per_thread; i++)
+	{
+		FFT_8(in, out, N, Ns, work_per_thread*thread_id + i);
+	}
+}
 void FFT_8(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id)
 {
 	size_t num_threads = N / 8;
@@ -202,57 +255,58 @@ void FFT_8(std::complex<double>* in, std::complex<double>* out, size_t N, size_t
 	out[(7 * Ns) + Idout] = in7;
 }
 
-int global=5;
-void test() { global++; }
-QwtPlot* last_plot;
-
-
-void threaded_DFT(std::complex<double>* x, std::complex<double>* X, size_t N) {
-
-	std::complex<double>* tmp=(std::complex<double>*)malloc(N * sizeof *tmp);
-	std::thread* t=NULL;
-	size_t num_threads;
-
-	size_t stages = log2(N);
-	size_t FFT_8_stages = stages / 3;
-	size_t remainder_stages = stages % 3;
-
-	size_t Ns = 1;
-	
-	for (size_t i=0; i < FFT_8_stages; i++)
+void FFT_thread(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id, size_t work, void(*FFT_func)(std::complex<double>*, std::complex<double>*, size_t, size_t, size_t)) {
+	for (size_t i = 0; i < work; i++)
 	{
-		num_threads = N / 8;
-		t = new std::thread[num_threads];
-		if (!t)
-			exit(EXIT_FAILURE);
-		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
-			//t[thread_id] = std::thread(test);	
-			t[thread_id] = std::thread(FFT_8, x, X, N, Ns, thread_id);
-		}
-
-		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
-			t[thread_id].join();
-		}
-
-		x = X;
-		X = tmp;
-		tmp = x;
-
-		Ns = pow(2, 3 * (i+1));
+		FFT_func(in, out, N, Ns, work*thread_id + i);
 	}
-	delete [] t;
+}
 
-	//last_plot = plotSignal(X, N, "last step");
+//Threaded multiple-stage implementation of the DFT. We spawn several threads and handle a fixed amount of work in each one.
+void threaded_DFT(std::complex<double>*x, std::complex<double>* X, size_t N) {
+
+	std::complex<double>* tmp = (std::complex<double>*)malloc(N * sizeof *tmp); //tmp array to hold the intermediate results between stages
+
+	size_t stages = log2(N);								//Total number of stages
+	size_t FFT_8_stages = stages / 3;						//Number of stages to compute using our largest FFT func (FFT_8)
+	size_t remainder_stages = stages % 3;					//Remainding stages
+	size_t Ns=1;											//Defined as pow (2 , number of completed stages). Used to calculate twiddle factors and index remapping
+	size_t num_groups;										//Number of groups per stages (how many times the FFT funcs are called per stage)
+	size_t num_threads;										//Number of threads to spawn (Spawning too many will decrease performance)
+	size_t work_per_thread;									//Number of groups handled by each thread
+
+	//Looping through the stages that use largest FFT func
+	for (size_t i = 0; i < FFT_8_stages; i++){
+		num_groups = N / 8;
+		num_threads = (std::thread::hardware_concurrency() < num_groups) ? std::thread::hardware_concurrency() : num_groups;
+		work_per_thread = num_groups / num_threads;
+		std::vector<std::thread> t = std::vector<std::thread>(num_threads);
+
+		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
+			t[thread_id] = std::thread(FFT_thread, x, X, N, Ns, thread_id, work_per_thread, &FFT_8);
+		}
+
+		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
+			t[thread_id].join();
+		}
+		
+		//Remapping input and output array for next stage
+		x = X;
+		X = tmp;
+		tmp = x;
+
+		Ns = Ns << 3;										//Each FFT_8 stage completes 3 stages
+	}
 	
-	switch (remainder_stages)
-	{
-	case 1:
-		num_threads = N / 2;
-		t = new std::thread[num_threads];
-		if (!t)
-			exit(EXIT_FAILURE);
+	//Dealing with the remainding stages. Same procedure as the FFT_8 stages.
+	if (remainder_stages == 1) {
+		num_groups = N / 2;
+		num_threads = (std::thread::hardware_concurrency() < num_groups) ? std::thread::hardware_concurrency() : num_groups;
+		work_per_thread = num_groups / num_threads;
+		std::vector<std::thread> t = std::vector<std::thread>(num_threads);
+
 		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
-			t[thread_id] = std::thread(FFT_2, x, X, N, Ns, thread_id);
+			t[thread_id] = std::thread(FFT_thread, x, X, N, Ns, thread_id, work_per_thread, &FFT_2);
 		}
 
 		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
@@ -261,33 +315,28 @@ void threaded_DFT(std::complex<double>* x, std::complex<double>* X, size_t N) {
 		x = X;
 		X = tmp;
 		tmp = x;
-		delete[] t;
-		break;
-
-	case 2:
-		num_threads = N / 2;
-		t = new std::thread[num_threads];
-		if (!t)
-			exit(EXIT_FAILURE);
-		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
-			t[thread_id] = std::thread(FFT_4, x, X, N, Ns, thread_id);
-		}
-
-		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
-			t[thread_id].join();
-		}
-		x = X;
-		X = tmp;
-		tmp = x;
-		delete[] t;
-		break;
-
-	default:
-		break;
 	}
 
-	if ((FFT_8_stages + (remainder_stages>0)) % 2)
-	{
+	else if (remainder_stages == 2) {
+		num_groups = N / 4;
+		num_threads = (std::thread::hardware_concurrency() < num_groups) ? std::thread::hardware_concurrency() : num_groups;
+		work_per_thread = num_groups / num_threads;
+		std::vector<std::thread> t = std::vector<std::thread>(num_threads);
+
+		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
+			t[thread_id] = std::thread(FFT_thread, x, X, N, Ns, thread_id, work_per_thread, &FFT_4);
+		}
+
+		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
+			t[thread_id].join();
+		}
+		x = X;
+		X = tmp;
+		tmp = x;
+	}
+
+	//Making sure the result is in the correct memory location expected by the caller. Freeing tmp array.
+	if ((FFT_8_stages + (remainder_stages>0)) % 2)	{
 		tmp = X;
 		free(tmp);
 		tmp = NULL;
@@ -301,12 +350,84 @@ void threaded_DFT(std::complex<double>* x, std::complex<double>* X, size_t N) {
 		x = NULL;
 		X = NULL;
 	}
+}
 
+//Silly implementation where we spawn as many threads as groups in each stage.
+void silly_threaded_DFT(std::complex<double>* x, std::complex<double>* X, size_t N) {
+	std::complex<double>* tmp=(std::complex<double>*)malloc(N * sizeof *tmp);
+
+	size_t num_threads;
+	size_t stages = log2(N);
+	size_t FFT_8_stages = stages / 3;
+	size_t remainder_stages = stages % 3;
+
+	size_t Ns = 1;
+	
+	for (size_t i=0; i < FFT_8_stages; i++){
+		num_threads = N / 8;
+		std::vector<std::thread> t = std::vector<std::thread>(num_threads);
+
+		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
+			t[thread_id] = std::thread(FFT_8, x, X, N, Ns, thread_id);
+		}
+		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
+			t[thread_id].join();
+		}
+		x = X;
+		X = tmp;
+		tmp = x;
+
+		Ns = Ns << 3;
+	}
+
+	if (remainder_stages == 1) {
+		num_threads = N / 2;
+		std::vector<std::thread> t = std::vector<std::thread>(num_threads);
+
+		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
+			t[thread_id] = std::thread(FFT_2, x, X, N, Ns, thread_id);
+		}
+
+		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
+			t[thread_id].join();
+		}
+		x = X;
+		X = tmp;
+		tmp = x;
+	}
+	else if (remainder_stages==2){
+		num_threads = N / 4;
+		std::vector<std::thread> t = std::vector<std::thread>(num_threads);
+
+		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
+			t[thread_id] = std::thread(FFT_4, x, X, N, Ns, thread_id);
+		}
+		for (size_t thread_id = 0; thread_id < num_threads; thread_id++) {
+			t[thread_id].join();
+		}
+		x = X;
+		X = tmp;
+		tmp = x;
+	}
+
+	if ((FFT_8_stages + (remainder_stages>0)) % 2)	{
+		tmp = X;
+		free(tmp);
+		tmp = NULL;
+		x = NULL;
+		X = NULL;
+	}
+	else {
+		std::memcpy(X, x, N * sizeof *X);
+		free(tmp);
+		tmp = NULL;
+		x = NULL;
+		X = NULL;
+	}
 }
 
 int main(int argc, char *argv[])
 {
-
 	QApplication a(argc, argv);
 
 	size_t size = 1 << 15;
@@ -322,11 +443,8 @@ int main(int argc, char *argv[])
 
 	QwtPlot* in_plot = plotSignal(input, size, "input");
 
-
-
 	std::chrono::high_resolution_clock::time_point t1; 
 	std::chrono::high_resolution_clock::time_point t2;
-
 
 	t1 = std::chrono::high_resolution_clock::now();
 	DFT(input, output, size, 1);
@@ -343,4 +461,3 @@ int main(int argc, char *argv[])
 
 	return a.exec();
 }
-
