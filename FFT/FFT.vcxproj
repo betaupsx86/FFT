@@ -37,7 +37,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PreprocessorDefinitions>UNICODE;WIN32;WIN64;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;C:\qwt-6.1.3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtWidgets;C:\qwt-6.1.3\src;$(TBBROOT)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -45,9 +45,10 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\qwt-6.1.3\lib;$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
+      <AdditionalLibraryDirectories>C:\qwt-6.1.3\lib;$(QTDIR)\lib;$(TBBROOT)\lib\intel64_win\vc14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qwtd.lib;qwt.lib;qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qwtd.lib;qwt.lib;qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;tbb_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -67,35 +68,38 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GeneratedFiles\Debug\moc_SignalPlot.cpp">
+    <ClCompile Include="FFT.cpp" />
+    <ClCompile Include="FFTPlot.cpp" />
+    <ClCompile Include="GeneratedFiles\Debug\moc_FFTPlot.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\qrc_SignalPlot.cpp">
+    <ClCompile Include="GeneratedFiles\qrc_FFTPlot.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_SignalPlot.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_FFTPlot.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SignalPlot.cpp" />
+    <ClCompile Include="tbb_FFT.cpp" />
+    <ClCompile Include="thread_FFT.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="SignalPlot.h">
+    <CustomBuild Include="FFTPlot.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing SignalPlot.h...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing FFTPlot.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB  "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets" "-IC:\qwt-6.1.3\src"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB  "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets" "-IC:\qwt-6.1.3\src" "-I$(TBBROOT)\include"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing SignalPlot.h...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing FFTPlot.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="SignalPlot.ui">
+    <CustomBuild Include="FFTPlot.ui">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Uic%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
@@ -107,10 +111,11 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GeneratedFiles\ui_SignalPlot.h" />
+    <ClInclude Include="FFT.h" />
+    <ClInclude Include="GeneratedFiles\ui_FFTPlot.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="SignalPlot.qrc">
+    <CustomBuild Include="FFTPlot.qrc">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(FullPath);%(AdditionalInputs)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Rcc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\qrc_%(Filename).cpp;%(Outputs)</Outputs>

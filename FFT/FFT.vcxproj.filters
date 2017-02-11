@@ -29,12 +29,12 @@
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
     <Filter Include="Generated Files\Debug">
-      <UniqueIdentifier>{847ebd40-3b93-48a2-868f-57e8b21f0cc9}</UniqueIdentifier>
+      <UniqueIdentifier>{31aa0393-894f-4a9e-bbd9-eda3facb9904}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
     <Filter Include="Generated Files\Release">
-      <UniqueIdentifier>{e78cce7b-3191-4b74-b3c3-5f7e7966d2d4}</UniqueIdentifier>
+      <UniqueIdentifier>{826d8cf7-bd3f-4096-ba43-6725ec89efb3}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
@@ -43,33 +43,45 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SignalPlot.cpp">
+    <ClCompile Include="FFTPlot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_SignalPlot.cpp">
+    <ClCompile Include="GeneratedFiles\Debug\moc_FFTPlot.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_SignalPlot.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_FFTPlot.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\qrc_SignalPlot.cpp">
+    <ClCompile Include="GeneratedFiles\qrc_FFTPlot.cpp">
       <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FFT.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tbb_FFT.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="thread_FFT.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="SignalPlot.h">
+    <CustomBuild Include="FFTPlot.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="SignalPlot.ui">
+    <CustomBuild Include="FFTPlot.ui">
       <Filter>Form Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="SignalPlot.qrc">
+    <CustomBuild Include="FFTPlot.qrc">
       <Filter>Resource Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GeneratedFiles\ui_SignalPlot.h">
+    <ClInclude Include="GeneratedFiles\ui_FFTPlot.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FFT.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
