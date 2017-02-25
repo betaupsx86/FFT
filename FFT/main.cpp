@@ -10,12 +10,12 @@
 #include <iostream>
 #include <chrono>
 
-QwtPlot* plotSignal(std::complex<double>* signal, size_t samples, char* title);
-extern void thread_DFT(std::complex<double>*x, std::complex<double>* X, size_t N);
-extern void parallel_DFT(std::complex<double>* x, std::complex<double>* X, size_t N);
-extern void DFT(std::complex<double>* x, std::complex<double>* X, size_t N, size_t s);
+QwtPlot* plotSignal(std::complex<float>* signal, size_t samples, char* title);
+extern void thread_DFT(std::complex<float>*x, std::complex<float>* X, size_t N);
+extern void parallel_DFT(std::complex<float>* x, std::complex<float>* X, size_t N);
+extern void DFT(std::complex<float>* x, std::complex<float>* X, size_t N, size_t s);
 
-QwtPlot* plotSignal(std::complex<double>* signal, size_t samples, char* title) {
+QwtPlot* plotSignal(std::complex<float>* signal, size_t samples, char* title) {
 
 	QwtPlot* plot = new QwtPlot();
 	plot->setTitle(title);
@@ -58,20 +58,20 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
-	size_t size = 1 << 6;
-	std::complex<double>* input = new std::complex<double>[size]; //tmp array to hold the intermediate results between stages
-	std::complex<double>* output_0 = new std::complex<double>[size]; 
-	std::complex<double>* output_1 = new std::complex<double>[size]; 
-	std::complex<double>* output_2 = new std::complex<double>[size];
+	size_t size = 1 << 27;
+	std::complex<float>* input = new std::complex<float>[size]; //tmp array to hold the intermediate results between stages
+	std::complex<float>* output_0 = new std::complex<float>[size]; 
+	std::complex<float>* output_1 = new std::complex<float>[size]; 
+	//std::complex<float>* output_2 = new std::complex<float>[size];
 
 	for (size_t i = 0; i < size; i++)
 	{
-		input[i] = std::polar(1.0, -2 * M_PI * 3* i /64 );
+		input[i] = std::polar(1.0F, float(-2 * M_PI * 3* i /64 ));
 		//input[i] = cos(i*M_PI / 8) + sin(i*M_PI / 8);
 		//input[i] = cos(0);
 	}
 
-	QwtPlot* in_plot = plotSignal(input, size, "input");
+//	QwtPlot* in_plot = plotSignal(input, size, "input");
 
 	std::chrono::high_resolution_clock::time_point t1;
 	std::chrono::high_resolution_clock::time_point t2;
@@ -86,14 +86,14 @@ int main(int argc, char *argv[])
 	t2 = std::chrono::high_resolution_clock::now();
 	double duration1 = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
-	t1 = std::chrono::high_resolution_clock::now();
-	DFT(input, output_2, size,1);
-	t2 = std::chrono::high_resolution_clock::now();
-	double duration2 = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+	//t1 = std::chrono::high_resolution_clock::now();
+	//DFT(input, output_2, size,1);
+	//t2 = std::chrono::high_resolution_clock::now();
+	//double duration2 = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
-	QwtPlot* out_plot_0 = plotSignal(output_0, size, "output_0");
-	QwtPlot* out_plot_1 = plotSignal(output_1, size, "output_1");
-	QwtPlot* out_plot_2 = plotSignal(output_2, size, "output_2");
+	//QwtPlot* out_plot_0 = plotSignal(output_0, size, "output_0");
+	//QwtPlot* out_plot_1 = plotSignal(output_1, size, "output_1");
+	//QwtPlot* out_plot_2 = plotSignal(output_2, size, "output_2");
 	
 	return a.exec();
 }

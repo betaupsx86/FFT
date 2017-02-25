@@ -2,15 +2,15 @@
 #include <thread>
 #include <vector>
 
-void FFT_thread(std::complex<double>* in, std::complex<double>* out, size_t N, size_t Ns, size_t thread_id, size_t work, void(*FFT_func)(std::complex<double>*, std::complex<double>*, size_t, size_t, size_t)) {
+void FFT_thread(std::complex<float>* in, std::complex<float>* out, size_t N, size_t Ns, size_t thread_id, size_t work, void(*FFT_func)(std::complex<float>*, std::complex<float>*, size_t, size_t, size_t)) {
 	for (size_t i = 0; i < work; i++)
 	{
 		FFT_func(in, out, N, Ns, work*thread_id + i);
 	}
 }
 //Threaded multiple-stage implementation of the DFT. We spawn several threads and handle a fixed amount of work in each one.
-void thread_DFT(std::complex<double>*x, std::complex<double>* X, size_t N) {
-	std::complex<double>* tmp = new std::complex<double>[N]; //tmp array to hold the intermediate results between stages
+void thread_DFT(std::complex<float>*x, std::complex<float>* X, size_t N) {
+	std::complex<float>* tmp = new std::complex<float>[N]; //tmp array to hold the intermediate results between stages
 
 	size_t stages = log2(N);								//Total number of stages
 	size_t FFT_8_stages = stages / 3;						//Number of stages to compute using our largest FFT func (FFT_8)
@@ -98,8 +98,8 @@ void thread_DFT(std::complex<double>*x, std::complex<double>* X, size_t N) {
 	}
 }
 //Silly implementation where we spawn as many threads as groups in each stage.
-void silly_threaded_DFT(std::complex<double>* x, std::complex<double>* X, size_t N) {
-	std::complex<double>* tmp = new std::complex<double>[N]; //tmp array to hold the intermediate results between stages
+void silly_threaded_DFT(std::complex<float>* x, std::complex<float>* X, size_t N) {
+	std::complex<float>* tmp = new std::complex<float>[N]; //tmp array to hold the intermediate results between stages
 
 	size_t num_threads;
 	size_t stages = log2(N);

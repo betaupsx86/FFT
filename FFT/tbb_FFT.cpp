@@ -2,8 +2,8 @@
 #include <FFT.h>
 #include <vector>
 
-void parallel_DFT(std::complex<double>* x, std::complex<double>* X, size_t N) {
-	std::complex<double>* tmp = new std::complex<double>[N]; //tmp array to hold the intermediate results between stages
+void parallel_DFT(std::complex<float>* x, std::complex<float>* X, size_t N) {
+	std::complex<float>* tmp = new std::complex<float>[N]; //tmp array to hold the intermediate results between stages
 
 	size_t num_threads;
 	size_t stages = log2(N);
